@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tareas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        #taskList {
+            list-style-type: none;
+            padding: 0;
+        }
+        #taskList li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 5px;
+        }
+        button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #ff4c4c;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #e04343;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Tareas</h1>
+
+    <!-- Formulario para agregar nueva tarea -->
+    <h2>Agregar Nueva Tarea</h2>
+    <input type="text" id="title" placeholder="Título de la tarea" required />
+    <textarea id="description" placeholder="Descripción de la tarea" required></textarea>
+    <button onclick="addTask()">Agregar Tarea</button>
+
+    <!-- Lista de tareas -->
+    <h2>Tareas</h2>
+    <ul id="taskList"></ul>
+
+    <script>
+        // Obtener las tareas desde la API y mostrarlas
+        function fetchTasks() {
+            fetch('http://localhost/todo-app/public/tasks')  // Cambiar la URL si es necesario
+                .then(response => response.json())
+                .then(tasks => {
+                    const taskList = document.getElementById('taskList');
+                    taskList.innerHTML = '';  // Limpiar la lista antes de agregar las tareas
+                    tasks.forEach(task => {
+                        let li = document.createElement('li');
+                        li.innerHTML = `
+                            <strong>${task.title}</strong><br>
+                            ${task.description} <br>
+                            <button onclick="deleteTask(${task.id})">Eliminar</button>
+                            <button onclick="editTask(${task.id}, '${task.title}', '${task.description}')">Editar</button>
+                        `;
+                        taskList.appendChild(li);
+                    });
+                });
+        }
+
+        // Agregar una nueva tarea a la base de datos
+        function addTask() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+
+            if (title && description) {
+                fetch('http://localhost/todo-app/public/tasks', {
+                    method: 'POST',
+                    body: JSON.stringify({title, description}),
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(() => {
+                    fetchTasks();  // Recargar la lista de tareas después de agregar una nueva
+                    document.getElementById('title').value = '';  // Limpiar los campos
+                    document.getElementById('description').value = '';
+                })
+                .catch(err => console.error('Error al agregar la tarea:', err));
+            } else {
+                alert('El título y la descripción son obligatorios');
+            }
+        }
+
+        // Eliminar una tarea de la base de datos
+        function deleteTask(id) {
+            fetch(`http://localhost/todo-app/public/tasks/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(() => {
+                fetchTasks();  // Recargar la lista de tareas después de eliminar una
+            })
+            .catch(err => console.error('Error al eliminar la tarea:', err));
+}
+
+
+        // Editar una tarea existente (puedes expandir esta funcionalidad según sea necesario)
+        function editTask(id, title, description) {
+            const newTitle = prompt("Editar título de la tarea", title);
+            const newDescription = prompt("Editar descripción de la tarea", description);
+
+            if (newTitle && newDescription) {
+                fetch(`http://localhost/todo-app/public/tasks/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({title: newTitle, description: newDescription}),
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(() => {
+                    fetchTasks();  // Recargar la lista de tareas después de actualizar una
+                })
+                .catch(err => console.error('Error al editar la tarea:', err));
+            }
+        }
+
+        // Obtener las tareas al cargar la página
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchTasks();
+        });
+    </script>
+</body>
+</html>
