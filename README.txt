@@ -13,7 +13,7 @@ Este es un proyecto de lista de tareas desarrollado con PHP y MySQL en el backen
 3. Asegúrate de que Apache y MySQL están activados en XAMPP.
 
 ## Ejecución
-1. Accede a `http://localhost/todo-app/index.html` en tu navegador para interactuar con la lista de tareas.
+1. Accede a `http://localhost/todo-app/public/index.html` en tu navegador para interactuar con la lista de tareas.
 2. Utiliza los botones para agregar, actualizar y eliminar tareas.
 
 ## Pruebas
